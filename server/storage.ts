@@ -69,7 +69,8 @@ export interface IStorage {
   getBooking(id: number): Promise<BookingWithRelations | undefined>;
   createBooking(booking: InsertBooking): Promise<Booking>;
   updateBooking(id: number, booking: Partial<InsertBooking>): Promise<Booking | undefined>;
-  cancelBooking(id: number, reason: string): Promise<Booking | undefined>;
+  cancelBooking(id: number, reason: string, userId?: string): Promise<Booking | undefined>;
+  deleteBooking(id: number, userId?: string): Promise<boolean>;
   checkBookingConflict(roomId: number, date: string, fromTime: string, toTime: string, excludeId?: number): Promise<boolean>;
 }
 
@@ -254,7 +255,9 @@ export class DatabaseStorage implements IStorage {
     return updated;
   }
 
-  async cancelBooking(id: number, reason: string): Promise<Booking | undefined> {
+  async cancelBooking(id: number, reason: string, userId?: string): Promise<Booking | undefined> {
+    const [booking] = await db.select().from(bookings).where(eq(bookings.id, id));
+    
     const [updated] = await db
       .update(bookings)
       .set({
@@ -265,7 +268,44 @@ export class DatabaseStorage implements IStorage {
       })
       .where(eq(bookings.id, id))
       .returning();
+
+    // Log the cancellation to audit
+    if (updated && userId) {
+      await db.insert(auditLogs).values({
+        tableName: "bookings",
+        recordId: id,
+        action: "cancelled",
+        oldData: booking,
+        newData: updated,
+        userId: userId,
+      });
+    }
+
     return updated;
+  }
+
+  async deleteBooking(id: number, userId?: string): Promise<boolean> {
+    // Get the booking before deleting for audit log
+    const [booking] = await db.select().from(bookings).where(eq(bookings.id, id));
+    
+    if (!booking) {
+      return false;
+    }
+
+    // Log the deletion to audit
+    if (userId) {
+      await db.insert(auditLogs).values({
+        tableName: "bookings",
+        recordId: id,
+        action: "deleted",
+        oldData: booking,
+        newData: null,
+        userId: userId,
+      });
+    }
+
+    await db.delete(bookings).where(eq(bookings.id, id));
+    return true;
   }
 
   async checkBookingConflict(

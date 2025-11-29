@@ -13,37 +13,68 @@ import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Plus, Search, MoreHorizontal, Pencil, Trash2, Copy, Calendar } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Plus, Search, MoreHorizontal, Pencil, Trash2, Copy, Calendar, List, ChevronLeft, ChevronRight } from "lucide-react";
 import type { BookingWithRelations } from "@shared/schema";
 import { format, parseISO } from "date-fns";
 
 interface BookingGridProps {
   bookings: BookingWithRelations[];
+  allBookings?: BookingWithRelations[];
   isLoading: boolean;
   selectedDate: Date;
   onAddBooking: () => void;
   onEditBooking: (booking: BookingWithRelations) => void;
   onDeleteBooking: (booking: BookingWithRelations) => void;
   onRepeatBooking: (booking: BookingWithRelations) => void;
+  onHardDeleteBooking?: (booking: BookingWithRelations) => void;
 }
 
 export function BookingGrid({
   bookings,
+  allBookings = [],
   isLoading,
   selectedDate,
   onAddBooking,
   onEditBooking,
   onDeleteBooking,
   onRepeatBooking,
+  onHardDeleteBooking,
 }: BookingGridProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [hideCancelled, setHideCancelled] = useState(false);
+  const [showAllRecords, setShowAllRecords] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+
+  const getStatusStyle = (status: string) => {
+    switch (status) {
+      case "Cancelled":
+        return "bg-red-500 text-white hover:bg-red-600";
+      case "Planning":
+        return "bg-blue-500 text-white hover:bg-blue-600";
+      case "Tentative":
+        return "bg-yellow-500 text-white hover:bg-yellow-600";
+      case "Confirmed":
+        return "bg-green-500 text-white hover:bg-green-600";
+      case "Completed":
+        return "bg-gray-500 text-white hover:bg-gray-600";
+      default:
+        return "bg-gray-400 text-white";
+    }
+  };
 
   const statusVariants: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
     Tentative: "outline",
@@ -92,7 +123,14 @@ export function BookingGrid({
     return `${hours.toString().padStart(2, "0")}:${mins.toString().padStart(2, "0")}`;
   };
 
+  const paginatedAllBookings = allBookings.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+  const totalPages = Math.ceil(allBookings.length / itemsPerPage);
+
   return (
+    <>
     <Card className="h-full flex flex-col" data-testid="booking-grid">
       <CardHeader className="pb-4">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -100,10 +138,20 @@ export function BookingGrid({
             <Calendar className="w-5 h-5" />
             Bookings for {format(selectedDate, "MMMM d, yyyy")}
           </CardTitle>
-          <Button onClick={onAddBooking} data-testid="button-add-booking">
-            <Plus className="w-4 h-4 mr-2" />
-            Add Booking
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button 
+              variant="outline" 
+              onClick={() => setShowAllRecords(true)} 
+              data-testid="button-view-all"
+            >
+              <List className="w-4 h-4 mr-2" />
+              View All Records
+            </Button>
+            <Button onClick={onAddBooking} data-testid="button-add-booking">
+              <Plus className="w-4 h-4 mr-2" />
+              Add Booking
+            </Button>
+          </div>
         </div>
         
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mt-4">
@@ -197,7 +245,7 @@ export function BookingGrid({
                       {calculateTotalTime(booking.bookingFromTime, booking.bookingToTime, booking.breakMinutes || 0)}
                     </TableCell>
                     <TableCell className="text-center">
-                      <Badge variant={statusVariants[booking.status || "Tentative"]}>
+                      <Badge className={getStatusStyle(booking.status || "Tentative")}>
                         {booking.status || "Tentative"}
                       </Badge>
                     </TableCell>
@@ -217,13 +265,25 @@ export function BookingGrid({
                             <Copy className="w-4 h-4 mr-2" />
                             Repeat Booking
                           </DropdownMenuItem>
-                          <DropdownMenuItem
-                            onClick={() => onDeleteBooking(booking)}
-                            className="text-destructive"
-                          >
-                            <Trash2 className="w-4 h-4 mr-2" />
-                            Cancel
-                          </DropdownMenuItem>
+                          {booking.status === "Cancelled" || booking.isCancelled ? (
+                            onHardDeleteBooking && (
+                              <DropdownMenuItem
+                                onClick={() => onHardDeleteBooking(booking)}
+                                className="text-destructive"
+                              >
+                                <Trash2 className="w-4 h-4 mr-2" />
+                                Delete Permanently
+                              </DropdownMenuItem>
+                            )
+                          ) : (
+                            <DropdownMenuItem
+                              onClick={() => onDeleteBooking(booking)}
+                              className="text-destructive"
+                            >
+                              <Trash2 className="w-4 h-4 mr-2" />
+                              Cancel
+                            </DropdownMenuItem>
+                          )}
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </TableCell>
@@ -235,5 +295,88 @@ export function BookingGrid({
         )}
       </CardContent>
     </Card>
+
+    {/* View All Records Dialog */}
+    <Dialog open={showAllRecords} onOpenChange={setShowAllRecords}>
+      <DialogContent className="max-w-6xl max-h-[80vh]">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <List className="w-5 h-5" />
+            All Booking Records
+          </DialogTitle>
+        </DialogHeader>
+        <ScrollArea className="h-[60vh]">
+          <div className="border rounded-lg overflow-hidden">
+            <Table>
+              <TableHeader>
+                <TableRow className="bg-muted/50">
+                  <TableHead>Date</TableHead>
+                  <TableHead>Room</TableHead>
+                  <TableHead>Customer</TableHead>
+                  <TableHead>Project</TableHead>
+                  <TableHead>Editor</TableHead>
+                  <TableHead className="text-center">Time</TableHead>
+                  <TableHead className="text-center">Status</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {paginatedAllBookings.map((booking) => {
+                  const bookingDate = typeof booking.date === 'string' 
+                    ? parseISO(booking.date) 
+                    : new Date(booking.date);
+                  return (
+                    <TableRow key={booking.id} data-testid={`all-booking-row-${booking.id}`}>
+                      <TableCell>{format(bookingDate, "MMM d, yyyy")}</TableCell>
+                      <TableCell className="font-medium">
+                        {booking.room?.shortName || booking.room?.name || "-"}
+                      </TableCell>
+                      <TableCell>{booking.customer?.name || "-"}</TableCell>
+                      <TableCell>{booking.project?.name || "-"}</TableCell>
+                      <TableCell>{booking.editor?.name || "-"}</TableCell>
+                      <TableCell className="text-center font-mono text-sm">
+                        {formatTime(booking.bookingFromTime)} - {formatTime(booking.bookingToTime)}
+                      </TableCell>
+                      <TableCell className="text-center">
+                        <Badge className={getStatusStyle(booking.status || "Tentative")}>
+                          {booking.status || "Tentative"}
+                        </Badge>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </div>
+        </ScrollArea>
+        {totalPages > 1 && (
+          <div className="flex items-center justify-between pt-4 border-t">
+            <span className="text-sm text-muted-foreground">
+              Page {currentPage} of {totalPages} ({allBookings.length} total records)
+            </span>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
+              >
+                <ChevronLeft className="w-4 h-4" />
+                Previous
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                disabled={currentPage === totalPages}
+              >
+                Next
+                <ChevronRight className="w-4 h-4" />
+              </Button>
+            </div>
+          </div>
+        )}
+      </DialogContent>
+    </Dialog>
+    </>
   );
 }

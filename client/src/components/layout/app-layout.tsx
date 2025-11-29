@@ -139,9 +139,11 @@ export function AppLayout({ children }: AppLayoutProps) {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuItem data-testid="menu-settings">
-                  <Settings className="w-4 h-4 mr-2" />
-                  Settings
+                <DropdownMenuItem asChild data-testid="menu-settings">
+                  <Link href="/settings">
+                    <Settings className="w-4 h-4 mr-2" />
+                    Settings
+                  </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
@@ -160,6 +162,9 @@ export function AppLayout({ children }: AppLayoutProps) {
           <header className="h-14 border-b flex items-center justify-between px-4 bg-background">
             <div className="flex items-center gap-4">
               <SidebarTrigger data-testid="button-sidebar-toggle" />
+            </div>
+            <div className="absolute left-1/2 -translate-x-1/2 flex items-center gap-2">
+              <span className="text-lg font-bold tracking-wide" data-testid="header-title">PRISM Software</span>
             </div>
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <Calendar className="w-4 h-4" />

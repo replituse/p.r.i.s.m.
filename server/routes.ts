@@ -307,7 +307,8 @@ export async function registerRoutes(server: Server, app: Express): Promise<void
     try {
       const id = parseInt(req.params.id);
       const { cancelReason } = req.body;
-      const booking = await storage.cancelBooking(id, cancelReason || "");
+      const userId = req.user?.claims?.sub;
+      const booking = await storage.cancelBooking(id, cancelReason || "", userId);
       if (!booking) {
         return res.status(404).json({ message: "Booking not found" });
       }
@@ -315,6 +316,18 @@ export async function registerRoutes(server: Server, app: Express): Promise<void
     } catch (error: any) {
       console.error("Error cancelling booking:", error);
       res.status(400).json({ message: error.message || "Failed to cancel booking" });
+    }
+  });
+
+  app.delete("/api/bookings/:id", isAuthenticated, async (req: any, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const userId = req.user?.claims?.sub;
+      await storage.deleteBooking(id, userId);
+      res.status(204).send();
+    } catch (error: any) {
+      console.error("Error deleting booking:", error);
+      res.status(400).json({ message: error.message || "Failed to delete booking" });
     }
   });
 

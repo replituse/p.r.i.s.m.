@@ -12,6 +12,7 @@ import CustomersPage from "@/pages/masters/customers";
 import ProjectsPage from "@/pages/masters/projects";
 import EditorsPage from "@/pages/masters/editors";
 import ReportsPage from "@/pages/reports";
+import SettingsPage from "@/pages/settings";
 
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -39,6 +40,7 @@ function Router() {
           <Route path="/masters/projects" component={ProjectsPage} />
           <Route path="/masters/editors" component={EditorsPage} />
           <Route path="/reports" component={ReportsPage} />
+          <Route path="/settings" component={SettingsPage} />
         </>
       )}
       <Route component={NotFound} />

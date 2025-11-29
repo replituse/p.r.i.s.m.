@@ -123,6 +123,26 @@ export default function Dashboard() {
     },
   });
 
+  const hardDeleteBookingMutation = useMutation({
+    mutationFn: async (id: number) => {
+      return await apiRequest("DELETE", `/api/bookings/${id}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/bookings"] });
+      toast({
+        title: "Success",
+        description: "Booking deleted permanently",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to delete booking",
+        variant: "destructive",
+      });
+    },
+  });
+
   const repeatBookingMutation = useMutation({
     mutationFn: async (data: { bookingId: number; fromDate: string; toDate: string; repeatPattern: string }) => {
       return await apiRequest("POST", `/api/bookings/${data.bookingId}/repeat`, data);
@@ -165,6 +185,12 @@ export default function Dashboard() {
   const handleRepeatBooking = (booking: BookingWithRelations) => {
     setSelectedBooking(booking);
     setShowRepeatModal(true);
+  };
+
+  const handleHardDeleteBooking = (booking: BookingWithRelations) => {
+    if (confirm("Are you sure you want to permanently delete this booking? This action cannot be undone.")) {
+      hardDeleteBookingMutation.mutate(booking.id);
+    }
   };
 
   const handleBookingSubmit = (data: any, ignoreConflict: boolean) => {
@@ -217,12 +243,14 @@ export default function Dashboard() {
           <div className="lg:col-span-8 xl:col-span-9">
             <BookingGrid
               bookings={dateBookings}
+              allBookings={allBookings}
               isLoading={isLoadingAll}
               selectedDate={selectedDate}
               onAddBooking={handleAddBooking}
               onEditBooking={handleEditBooking}
               onDeleteBooking={handleDeleteBooking}
               onRepeatBooking={handleRepeatBooking}
+              onHardDeleteBooking={handleHardDeleteBooking}
             />
           </div>
         </div>
