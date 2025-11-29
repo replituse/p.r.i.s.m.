@@ -11,16 +11,68 @@ import {
 } from "@shared/schema";
 import { addDays, differenceInDays, format, parseISO, isWeekend } from "date-fns";
 
+const ADMIN_EMAIL = "prism@gmail.com";
+const ADMIN_PASSWORD = "prism@123";
+
 export async function registerRoutes(server: Server, app: Express): Promise<void> {
   // Auth middleware
   await setupAuth(app);
 
-  // Auth routes
-  app.get("/api/auth/user", isAuthenticated, async (req: any, res) => {
+  // Simple email/password login
+  app.post("/api/auth/login", async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
-      const user = await storage.getUser(userId);
-      res.json(user);
+      const { email, password } = req.body;
+
+      if (email === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
+        const user = await storage.upsertUser({
+          id: "admin-user-1",
+          email: ADMIN_EMAIL,
+          firstName: "PRISM",
+          lastName: "Admin",
+          profileImageUrl: null,
+        });
+
+        req.session.userId = user.id;
+        req.session.isAuthenticated = true;
+        
+        res.json({ success: true, user });
+      } else {
+        res.status(401).json({ message: "Invalid email or password" });
+      }
+    } catch (error) {
+      console.error("Error during login:", error);
+      res.status(500).json({ message: "Login failed" });
+    }
+  });
+
+  // Logout endpoint
+  app.post("/api/auth/logout", (req: any, res) => {
+    req.session.destroy((err: any) => {
+      if (err) {
+        res.status(500).json({ message: "Logout failed" });
+      } else {
+        res.json({ success: true });
+      }
+    });
+  });
+
+  // Auth routes - updated to support both OAuth and simple login
+  app.get("/api/auth/user", async (req: any, res) => {
+    try {
+      if (req.session?.isAuthenticated && req.session?.userId) {
+        const user = await storage.getUser(req.session.userId);
+        if (user) {
+          return res.json(user);
+        }
+      }
+      
+      if (req.user?.claims?.sub) {
+        const userId = req.user.claims.sub;
+        const user = await storage.getUser(userId);
+        return res.json(user);
+      }
+      
+      res.status(401).json({ message: "Unauthorized" });
     } catch (error) {
       console.error("Error fetching user:", error);
       res.status(500).json({ message: "Failed to fetch user" });

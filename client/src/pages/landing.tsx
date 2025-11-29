@@ -1,41 +1,31 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Calendar, Clock, Users, Building2, Film, Sparkles, AlertCircle, Loader2 } from "lucide-react";
+import { Calendar, Clock, Users, Building2, Film, Sparkles } from "lucide-react";
+import { LoginModal } from "@/components/auth/login-modal";
 
-export default function Landing() {
-  const [authError, setAuthError] = useState<string | null>(null);
-  const [isLoggingIn, setIsLoggingIn] = useState(false);
+interface LandingProps {
+  onLoginSuccess?: () => void;
+}
 
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const error = params.get("auth_error");
-    if (error) {
-      setAuthError(decodeURIComponent(error));
-      window.history.replaceState({}, "", window.location.pathname);
-    }
-  }, []);
+export default function Landing({ onLoginSuccess }: LandingProps) {
+  const [showLoginModal, setShowLoginModal] = useState(false);
 
   const handleLogin = () => {
-    setIsLoggingIn(true);
-    window.location.href = "/api/login";
+    setShowLoginModal(true);
+  };
+
+  const handleLoginSuccess = () => {
+    setShowLoginModal(false);
+    if (onLoginSuccess) {
+      onLoginSuccess();
+    } else {
+      window.location.reload();
+    }
   };
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Auth Error Alert */}
-      {authError && (
-        <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 w-full max-w-md px-4">
-          <Alert variant="destructive">
-            <AlertCircle className="h-4 w-4" />
-            <AlertDescription>
-              Sign in failed: {authError}. Please try again.
-            </AlertDescription>
-          </Alert>
-        </div>
-      )}
-
       {/* Hero Section */}
       <div className="relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-background to-accent/20" />
@@ -49,17 +39,9 @@ export default function Landing() {
             </div>
             <Button 
               onClick={handleLogin}
-              disabled={isLoggingIn}
               data-testid="button-login"
             >
-              {isLoggingIn ? (
-                <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Signing In...
-                </>
-              ) : (
-                "Sign In"
-              )}
+              Sign In
             </Button>
           </nav>
 
@@ -76,20 +58,10 @@ export default function Landing() {
               <Button 
                 size="lg" 
                 onClick={handleLogin}
-                disabled={isLoggingIn}
                 data-testid="button-get-started"
               >
-                {isLoggingIn ? (
-                  <>
-                    <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                    Signing In...
-                  </>
-                ) : (
-                  <>
-                    <Sparkles className="w-5 h-5 mr-2" />
-                    Get Started
-                  </>
-                )}
+                <Sparkles className="w-5 h-5 mr-2" />
+                Get Started
               </Button>
               <Button 
                 size="lg" 
@@ -206,6 +178,13 @@ export default function Landing() {
           </div>
         </div>
       </footer>
+
+      {/* Login Modal */}
+      <LoginModal
+        open={showLoginModal}
+        onOpenChange={setShowLoginModal}
+        onLoginSuccess={handleLoginSuccess}
+      />
     </div>
   );
 }
