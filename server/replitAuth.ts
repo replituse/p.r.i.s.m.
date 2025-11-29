@@ -18,27 +18,6 @@ const getOidcConfig = memoize(
   { maxAge: 3600 * 1000 }
 );
 
-function getCallbackDomain(requestHostname: string): string {
-  const replitDomains = process.env.REPLIT_DOMAINS;
-  const devDomain = process.env.REPLIT_DEV_DOMAIN;
-  
-  if (replitDomains) {
-    const domains = replitDomains.split(",");
-    if (domains.includes(requestHostname)) {
-      return requestHostname;
-    }
-    if (domains.length > 0) {
-      return domains[0];
-    }
-  }
-  
-  if (devDomain && requestHostname === "localhost") {
-    return devDomain;
-  }
-  
-  return requestHostname;
-}
-
 export function getSession() {
   const sessionTtl = 7 * 24 * 60 * 60 * 1000; // 1 week
   const pgStore = connectPg(session);
@@ -101,8 +80,7 @@ export async function setupAuth(app: Express) {
 
   const registeredStrategies = new Set<string>();
 
-  const ensureStrategy = (requestHostname: string) => {
-    const domain = getCallbackDomain(requestHostname);
+  const ensureStrategy = (domain: string) => {
     const strategyName = `replitauth:${domain}`;
     if (!registeredStrategies.has(strategyName)) {
       const strategy = new Strategy(
@@ -117,31 +95,24 @@ export async function setupAuth(app: Express) {
       passport.use(strategy);
       registeredStrategies.add(strategyName);
     }
-    return domain;
   };
 
   passport.serializeUser((user: Express.User, cb) => cb(null, user));
   passport.deserializeUser((user: Express.User, cb) => cb(null, user));
 
   app.get("/api/login", (req, res, next) => {
-    const domain = ensureStrategy(req.hostname);
-    passport.authenticate(`replitauth:${domain}`, {
+    ensureStrategy(req.hostname);
+    passport.authenticate(`replitauth:${req.hostname}`, {
       prompt: "login consent",
       scope: ["openid", "email", "profile", "offline_access"],
     })(req, res, next);
   });
 
   app.get("/api/callback", (req, res, next) => {
-    // Check for OAuth errors in the query parameters
-    if (req.query.error) {
-      console.error("OAuth callback error:", req.query.error, req.query.error_description);
-      return res.redirect("/?auth_error=" + encodeURIComponent(String(req.query.error_description || req.query.error)));
-    }
-    
-    const domain = ensureStrategy(req.hostname);
-    passport.authenticate(`replitauth:${domain}`, {
+    ensureStrategy(req.hostname);
+    passport.authenticate(`replitauth:${req.hostname}`, {
       successReturnToOrRedirect: "/",
-      failureRedirect: "/?auth_error=login_failed",
+      failureRedirect: "/api/login",
     })(req, res, next);
   });
 
