@@ -1,0 +1,204 @@
+You are updating my existing React + MySQL Desktop Booking Software (Electron or Tauri).
+Follow all requirements exactly.
+Keep UI clean, modern, beautifully aligned, and smooth transitions everywhere.
+
+🔧 1. Make the Settings Button Fully Functional
+
+Create a Settings page with full functionality.
+
+Options should include:
+
+App preferences
+
+Theme (light/dark toggle)
+
+Database connection test
+
+Role management (Admin/User)
+
+Notification settings
+
+Ensure the settings button opens smoothly and updates persist using MySQL.
+
+🗓 2. Fix Dashboard Alignment Issues
+
+(Refer to screenshot 1)
+
+Fix the cut calendar/date component—it must fit correctly inside the card.
+
+Proper alignment for:
+
+Calendar
+
+Bookings table
+
+Search bar
+
+Add Booking button
+
+Make layout responsive for desktop resolutions.
+
+📋 3. Dashboard Enhancements
+
+Add the following items to the Dashboard booking table:
+
+a) “View All Records” Button
+
+On dashboard card top-right
+
+Opens all booking records (paginated)
+
+b) Apply Proper Status Colors
+
+Cancel = Red
+
+Planning = Blue
+
+Tentative = Yellow
+
+Confirmed = Green
+
+c) Delete Booking Feature
+
+After a booking is cancelled, show a Delete button
+
+Clicking Delete removes the record from dashboard but saves history in MySQL:
+
+When created
+
+When cancelled
+
+When deleted
+
+Who performed the action
+
+History must appear in Booking Reports.
+
+🧾 4. Invoice / Billing System
+
+(Refer to screenshot 3 – PDF sample)
+
+When a booking is Completed, generate an invoice automatically.
+
+Invoice fields required:
+
+Booking date
+
+Project name
+
+Customer
+
+Room
+
+Editor
+
+From time – To time
+
+Break time
+
+Actual time
+
+Total hours
+
+Hourly cost
+
+Total cost
+
+Generate in PDF format with clean alignment like sample
+
+Add buttons:
+
+View Invoice
+
+Download Invoice
+
+Store all invoices in MySQL for future viewing.
+
+📤 5. Fix Export PDF / Excel
+
+Export must work according to the current filters:
+
+Report Type
+
+Date Range
+
+Room
+
+Booking Status
+
+PDF and Excel must accurately reflect filtered data only.
+
+📊 6. Booking Report Section Enhancements
+Add “View All” Button
+
+Top-right corner
+
+Shows all booking history for month/year:
+
+Cancelled
+
+Planning
+
+Tentative
+
+Confirmed
+
+Completed
+
+Rearrange Layout
+
+Move the following UP:
+
+Total Bookings
+
+Total Hours
+
+Confirmed
+
+Cancelled
+
+Move these DOWN:
+
+Report Type
+
+From Date
+
+To Date
+
+Room
+
+Status
+
+🎨 7. UI/UX Improvements
+
+Add modern spacing + padding
+
+Rounded cards
+
+Smooth transitions
+
+Animations for opening modals and reports
+
+Improve readability and align tables
+
+Match the look of screenshots provided
+
+Remove UI clipping or overflow issues
+
+🏷 8. Add Center Heading
+
+At the top header bar, center text:
+
+PRISM Software
+
+Keep it bold, clean, and nicely aligned with the calendar icon and user profile.
+
+📦 9. Final Packaging
+
+Ensure the app builds properly as a desktop app (Electron or Tauri):
+
+npm run build
+
+.exe output
+
+Must connect to MySQL (not SQLite or local DB).
