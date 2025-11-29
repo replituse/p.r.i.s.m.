@@ -1,10 +1,41 @@
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Calendar, Clock, Users, Building2, Film, Sparkles } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Calendar, Clock, Users, Building2, Film, Sparkles, AlertCircle, Loader2 } from "lucide-react";
 
 export default function Landing() {
+  const [authError, setAuthError] = useState<string | null>(null);
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const error = params.get("auth_error");
+    if (error) {
+      setAuthError(decodeURIComponent(error));
+      window.history.replaceState({}, "", window.location.pathname);
+    }
+  }, []);
+
+  const handleLogin = () => {
+    setIsLoggingIn(true);
+    window.location.href = "/api/login";
+  };
+
   return (
     <div className="min-h-screen bg-background">
+      {/* Auth Error Alert */}
+      {authError && (
+        <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 w-full max-w-md px-4">
+          <Alert variant="destructive">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>
+              Sign in failed: {authError}. Please try again.
+            </AlertDescription>
+          </Alert>
+        </div>
+      )}
+
       {/* Hero Section */}
       <div className="relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-background to-accent/20" />
@@ -17,10 +48,18 @@ export default function Landing() {
               <span className="text-2xl font-semibold tracking-tight">P.R.I.S.M.</span>
             </div>
             <Button 
-              onClick={() => window.location.href = "/api/login"}
+              onClick={handleLogin}
+              disabled={isLoggingIn}
               data-testid="button-login"
             >
-              Sign In
+              {isLoggingIn ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Signing In...
+                </>
+              ) : (
+                "Sign In"
+              )}
             </Button>
           </nav>
 
@@ -33,14 +72,24 @@ export default function Landing() {
               Professional Room & Studio Management System for film production studios, 
               editing rooms, sound recording facilities, and VFX departments.
             </p>
-            <div className="flex gap-4">
+            <div className="flex gap-4 flex-wrap">
               <Button 
                 size="lg" 
-                onClick={() => window.location.href = "/api/login"}
+                onClick={handleLogin}
+                disabled={isLoggingIn}
                 data-testid="button-get-started"
               >
-                <Sparkles className="w-5 h-5 mr-2" />
-                Get Started
+                {isLoggingIn ? (
+                  <>
+                    <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                    Signing In...
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="w-5 h-5 mr-2" />
+                    Get Started
+                  </>
+                )}
               </Button>
               <Button 
                 size="lg" 
