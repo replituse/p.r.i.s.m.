@@ -1,0 +1,199 @@
+You are updating my React + MySQL + Node.js desktop software (PRISM Booking System).
+Fix the following issues and update all modules accordingly.
+
+🔥 1. FIX "401 Unauthorized" WHEN CREATING ROOM / CUSTOMER / PROJECT / EDITOR
+
+Currently when I add:
+
+Room
+
+Customer
+
+Project
+
+Editor
+
+The API returns:
+
+401: {"message": "Unauthorized"}
+
+
+This must be fully fixed.
+
+Fix Requirements:
+
+Check login token handling in frontend:
+
+Ensure token is stored in:
+
+localStorage OR sessionStorage
+
+and included in axios/fetch headers correctly
+
+Every API request must send:
+
+Authorization: Bearer <token>
+
+
+If token is expired → refresh or send user back to login (but DO NOT block valid requests)
+
+Fix backend middleware:
+
+Validate JWT token properly
+
+Ensure routes /rooms/create, /customers/create, /projects/create, /editors/create are allowed for authenticated users
+
+Make all create/update/delete endpoints work correctly without Unauthorized errors.
+
+🔧 2. Ensure All New Records Save Properly in MySQL
+
+Whenever a new Room, Customer, Project, or Editor is created:
+
+Save to MySQL successfully
+
+API response must return the created object
+
+Frontend must refresh automatically
+
+Newly created items should appear in:
+
+Dashboard
+
+Booking modal dropdowns
+
+Booking history
+
+Invoice section
+
+Reports section
+
+Fix any missing relations or API issues.
+
+📊 3. Fix Dashboard Fetch Logic
+
+Dashboard currently does not update after new items are added.
+
+Fix:
+
+Ensure dashboard loads:
+
+Total Rooms
+
+Total Customers
+
+Total Projects
+
+Total Editors
+
+Today's Bookings
+
+Cancelled / Confirmed / Planning counts
+
+Fetch must always use the authenticated API token.
+
+🧾 4. Booking History & Invoice Must Reflect New Data
+
+Currently:
+
+Newly created Rooms, Customers, Projects not showing in Booking History or Invoice.
+
+Fix:
+
+Update backend relationships (JOIN queries)
+
+Ensure all booking lists are populated with:
+
+Room name
+
+Customer name
+
+Project name
+
+Editor name
+
+Update invoice generation to include newly added entities.
+
+🗄 5. Fix API Response Format
+
+Standardize responses for all modules:
+
+Success:
+{
+  success: true,
+  data: {...},
+  message: "Created successfully"
+}
+
+Error:
+{
+  success: false,
+  message: "Unauthorized / Validation Error"
+}
+
+🔐 6. Fix Authentication Middleware
+
+Update JWT verify function
+
+If token exists and valid → allow access
+
+If missing → return 401
+
+If expired → return 403 and request re-login
+
+Make middleware compatible with all modules.
+
+⚙️ 7. Test All CRUD Operations
+
+Ensure all CRUD work normally with authentication:
+
+Rooms
+
+Create
+
+Update
+
+Delete
+
+List
+
+Projects
+
+Create
+
+Update
+
+Delete
+
+List
+
+Customers
+
+Create
+
+Update
+
+Delete
+
+List
+
+Editors
+
+Create
+
+Update
+
+Delete
+
+List
+
+📦 8. Final Checks
+
+After completing updates:
+
+✔ No unauthorized error
+✔ All data saved in MySQL
+✔ Data visible everywhere it should
+✔ Dashboard updated
+✔ Booking modal dropdown updated
+✔ Invoice updated
+✔ Reports updated
