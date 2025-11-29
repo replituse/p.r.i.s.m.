@@ -1,0 +1,258 @@
+I want you to build a complete desktop software using the following strict requirements:
+
+🔹 Technology Requirements
+
+Frontend UI: React (functional components, hooks, clean modular folder structure, reusable components, responsive layout, modern UI design similar to Material-UI or Chakra UI)
+
+Backend: Node.js + Express
+
+Database: MySQL (strictly use MySQL only)
+
+Desktop App Packaging: Electron (React + Node backend wrapped into one desktop executable)
+
+Auto-create the MySQL database & tables on first launch with:
+
+host: localhost
+
+user: root
+
+password: root (or 12345)
+
+database name: prism
+
+🔹 Software Purpose
+
+The software will be a studio / room / film production booking & scheduling system, modeled on the logic used in the PRISM software shown in the reference video.
+
+The logic includes:
+
+Book a studio/room/department slot
+
+Assign customer, project, editor, booking time, actual time, break hours
+
+Prevent booking conflicts unless “Ignore Conflict Flag” enables it
+
+Manage master data (rooms, editors, customers, projects)
+
+Capture booking status (Tentative, Confirmed, Planning, Completed)
+
+Modify bookings, repeat bookings, cancel bookings
+
+Generate reports
+
+Dashboard calendar for booking overview
+
+Login screen with company selection
+
+Modern, clean, attractive UI (not outdated like the old PRISM UI)
+
+🔹 Core Modules to Build
+1. Authentication Module
+
+Fields:
+
+Username
+
+Security PIN
+
+Company (dropdown)
+
+Today’s date (auto-filled, non-editable)
+
+Features:
+
+Validate user from MySQL
+
+If first run, auto-create user table with 1 default admin user
+
+Store session
+
+Redirect to main dashboard
+
+2. Main Window
+
+Top menu (same structure as PRISM):
+
+Operations
+
+Masters
+
+Reports
+
+Utility
+
+Windows
+
+Exit
+
+The main area should show:
+
+Calendar (month view) on left
+
+Booking grid (table with bookings) on right
+
+“Hide Canceled Booking” checkbox
+
+Add / Modify / Exit buttons
+
+3. Booking Schedule Module
+
+Booking form fields:
+
+Date
+
+Booking From Time – To Time (hh:mm)
+
+Actual From Time – To Time
+
+Break (hh:mm)
+
+Customer (dropdown from master)
+
+Project (dropdown from master)
+
+Room (dropdown)
+
+Editor (dropdown)
+
+Status (Tentative, Confirmed, Planning, Completed)
+
+Remarks
+
+Cancel booking + Reason
+
+Automatic calculations:
+
+Total Booking Time
+
+Total Actual Time
+
+Total Hours
+
+Features:
+
+Add Booking
+
+Modify Booking
+
+Delete/Cancel Booking
+
+Repeat Booking (like PRISM: From Date → To Date, repeated daily/weekly)
+
+4. Master Modules
+
+Create UI for:
+
+Room Master
+
+Type (Sound, Video, Outdoor, Editing, VFX, etc)
+
+Name
+
+Short Name
+
+Ignore Conflict Flag
+
+Active
+
+Customer Master
+Project Master
+Editor Master
+5. Reports Module
+
+Generate reports in:
+
+PDF
+
+Excel
+
+Reports:
+
+Daily Booking Report
+
+Room-wise Booking Report
+
+Customer-wise Project Summary
+
+Cancelled Booking Report
+
+6. Database Requirements
+
+On first run, auto-create database prism and the following tables:
+
+users
+
+rooms
+
+customers
+
+projects
+
+editors
+
+bookings
+
+booking_repeat
+
+audit_log
+
+Include proper schema:
+
+Primary keys
+
+Foreign keys
+
+Default timestamps
+
+Soft delete flags
+
+🔹 UI Requirements
+
+Clean, modern, attractive design
+
+Light theme with soft shadows, rounded cards, good spacing
+
+Smooth modal windows for booking
+
+Calendar component must be modern (React Calendar or FullCalendar)
+
+Booking grid must be searchable and sortable
+
+Desktop app should look like a professional enterprise tool
+
+🔹 Deliverables
+
+Please generate:
+
+1. Full project folder structure
+
+frontend/
+
+backend/
+
+electron/
+
+2. Complete code for:
+
+React UI
+
+Node.js backend
+
+MySQL scripts
+
+Electron packaging
+
+Auto database creation
+
+3. Instructions for:
+
+Running development environment
+
+Building desktop executable for Windows
+
+Seeding master data
+
+4. Example demo data
+🔹 Very Important
+
+You must exactly replicate the PRISM workflow shown in the provided screenshots and video, but with a more modern and easier-to-use UI.
